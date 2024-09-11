@@ -90,30 +90,33 @@ function redirectToPagemain() {
 }
 
 
-
 function redirectToPagemainlogin() {
+  var user = document.getElementById("username").value;
+  var password = document.getElementById("password").value;
 
-  user = document.getElementById("username").value;
-  password = document.getElementById("password").value;
-  if(user && password ){
-    alert("Login effettuato con successo");
-  
+  if (user && password) {
     $.ajax({
-      url:'/login-variabiles',
+      url: '/login-variabiles',
       type: 'POST',
       data: { 
         var1: user, 
-        var2: password
+        var2: password 
       },
-
-    })
-
-
-  window.location.href = "/main";
-}
-else{
-  alert("Inserisci username e password");
-}
+      success: function(response) {
+        // Se l'autenticazione è riuscita, mostra un messaggio di successo e reindirizza
+        alert("Login effettuato con successo!");
+        alert("User: " + user + "\nPassword: " + password);
+        window.location.href = "/welcome";
+      },
+      error: function(xhr, status, error) {
+        // Gestisci gli errori
+        alert("Errore di autenticazione. Riprova.");
+        console.error("Errore:", status, error);
+      }
+    });
+  } else {
+    alert("Inserisci username e password");
+  }
 }
 
 function redirectToPageeditor() {

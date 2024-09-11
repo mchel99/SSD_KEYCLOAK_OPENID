@@ -1,4 +1,4 @@
-package com.ssd.demo.service;
+package com.ssd.demo.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
@@ -19,6 +19,10 @@ import java.util.List;
 
 @Service
 public class LDAPService {
+
+    public LDAPService() {
+        this.ldapAuthenticationProvider = null;
+    }
 
     @Autowired
     private LdapTemplate ldapTemplate;
@@ -52,7 +56,8 @@ public class LDAPService {
      * @param username il nome utente fornito
      * @param password la password fornita
      * @return true se l'autenticazione è avvenuta con successo, false altrimenti
-     * @throws AuthenticationException se si verifica un errore durante l'autenticazione
+     * @throws AuthenticationException se si verifica un errore durante
+     *                                 l'autenticazione
      */
     public boolean authenticate(String username, String password) {
         try {
@@ -93,8 +98,7 @@ public class LDAPService {
                 (AttributesMapper<String>) attributes -> {
                     // Ritorna l'UID se presente
                     return (String) attributes.get("uid").get();
-                }
-        );
+                });
 
         // Verifica se il risultato contiene almeno un elemento
         return !result.isEmpty();
