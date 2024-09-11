@@ -1,8 +1,9 @@
-package com.ssd.demo.Service;
+package com.ssd.demo.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
+import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,7 +11,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.ldap.authentication.LdapAuthenticationProvider;
 import org.springframework.security.ldap.authentication.BindAuthenticator;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import javax.naming.directory.Attributes;
+import java.util.List;
 
 @Service
 public class LDAPService {
@@ -21,7 +26,7 @@ public class LDAPService {
     @Autowired
     private LdapContextSource contextSource;
 
-    private LdapAuthenticationProvider ldapAuthenticationProvider;
+    private final LdapAuthenticationProvider ldapAuthenticationProvider;
 
     public LDAPService(LdapTemplate ldapTemplate, LdapContextSource contextSource) {
         this.ldapTemplate = ldapTemplate;
@@ -47,8 +52,7 @@ public class LDAPService {
      * @param username il nome utente fornito
      * @param password la password fornita
      * @return true se l'autenticazione è avvenuta con successo, false altrimenti
-     * @throws AuthenticationException se si verifica un errore durante
-     *                                 l'autenticazione
+     * @throws AuthenticationException se si verifica un errore durante l'autenticazione
      */
     public boolean authenticate(String username, String password) {
         try {
@@ -58,10 +62,13 @@ public class LDAPService {
             }
 
             // Autentica l'utente utilizzando UsernamePasswordAuthenticationToken
-            Authentication authentication = new UsernamePasswordAuthenticationToken(username, password);
-            ldapAuthenticationProvider.authenticate(authentication);
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password);
+            Authentication authentication = ldapAuthenticationProvider.authenticate(authToken);
 
-            return true;
+            // Salva l'autenticazione nel contesto di sicurezza di Spring
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            return authentication.isAuthenticated();
         } catch (AuthenticationException ex) {
             // Gestisci eventuali errori di autenticazione
             System.err.println("Errore durante l'autenticazione LDAP: " + ex.getMessage());
@@ -80,10 +87,16 @@ public class LDAPService {
         EqualsFilter filter = new EqualsFilter("uid", username);
 
         // Cerca l'utente nell'OU "people" per vedere se esiste
-        return ldapTemplate.search(
+        List<String> result = ldapTemplate.search(
                 "ou=people", // Base di ricerca
                 filter.encode(), // Filtro LDAP
-                (attributes, name) -> attributes.get("uid") != null // Mappa il risultato
-        ).size() > 0;
+                (AttributesMapper<String>) attributes -> {
+                    // Ritorna l'UID se presente
+                    return (String) attributes.get("uid").get();
+                }
+        );
+
+        // Verifica se il risultato contiene almeno un elemento
+        return !result.isEmpty();
     }
 }
