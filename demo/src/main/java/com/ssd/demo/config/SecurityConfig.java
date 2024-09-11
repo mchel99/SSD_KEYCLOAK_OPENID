@@ -17,6 +17,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/bootstrap-4/**", "/jquery/**").permitAll() // Permetti l'accesso ai file statici
                 .requestMatchers("/login").permitAll()     // Consenti l'accesso alla pagina di login
+                .requestMatchers("/signup").permitAll()    // Consenti l'accesso alla pagina di registrazione
                 .anyRequest().authenticated()              // Richiedi autenticazione per tutte le altre pagine
             )
             .formLogin(form -> form

@@ -169,3 +169,8 @@ function saveLoginData() {
 
   localStorage.setItem("username", username);
 }
+
+function redirectToSignupPage() {
+  console.log('redirectToSignupPage function called');
+  window.location.href ="/signup";
+}
