@@ -1,4 +1,4 @@
-package com.ssd.demo.Controller;
+package com.ssd.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -7,24 +7,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import com.ssd.demo.model.*;
-//import com.ssd.demo.Service.LDAPService;
+import com.ssd.demo.service.LDAPService;
+import com.ssd.demo.model.User;
 
 @Controller
 public class GUIController {
-
+    
     User user = new User();
-    // private final LDAPService ldapService;
+    @Autowired
+    private LDAPService ldapService;
 
-    /*
-     * @Autowired
-     * public GUIController(LDAPService ldapService) {
-     * this.ldapService = ldapService;
-     * }
-     */
     @GetMapping("/login")
     public String loginPage() {
-        return "login"; // Nome del template Thymeleaf per la pagina1.html
+        return "login"; // Nome del template Thymeleaf per la pagina di login
     }
 
     @PostMapping("/login-variabiles")
@@ -34,19 +29,13 @@ public class GUIController {
         System.out.println("username : " + username);
         System.out.println("password : " + password);
 
-        user.setUsername(username);
-        user.setPassword(password);
-
-        // Salva i valori in una variabile o esegui altre operazioni necessarie
-        // if (ldapService.authenticate(user.getUsername(), user.getPassword())) {
-        if ((user.getUsername().equals("ciao")) && (user.getPassword().equals("ciao"))) {
+        if (ldapService.authenticate(username, password)) {
             System.out.println("Dati ricevuti con successo");
             return ResponseEntity.ok("success");
         } else {
             System.out.println("ERRORE");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Si è verificato un errore interno");
         }
-
     }
 
     @GetMapping("/signup")
@@ -58,5 +47,4 @@ public class GUIController {
     public String welcomePage() {
         return "welcome";
     }
-
 }
