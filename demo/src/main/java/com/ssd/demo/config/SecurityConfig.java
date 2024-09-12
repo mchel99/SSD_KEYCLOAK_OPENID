@@ -11,37 +11,48 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/bootstrap-4/**", "/jquery/**").permitAll() // Permetti
-                                                                                                                         // l'accesso
-                                                                                                                         // ai
-                                                                                                                         // file
-                                                                                                                         // statici
-                        .requestMatchers("/login").permitAll() // Consenti l'accesso alla pagina di login
-                        .requestMatchers("/signup").permitAll() // Consenti l'accesso alla pagina di registrazione
-                        .requestMatchers("/welcome").permitAll() // Consenti l'accesso alla pagina di welcome
-                        .anyRequest().authenticated() // Richiedi autenticazione per tutte le altre pagine
-                )
-                .formLogin(form -> form
-                        .loginPage("/login") // Specifica la pagina di login personalizzata
-                        .permitAll() // Consenti l'accesso a tutti alla pagina di login
-                )
-                .logout(logout -> logout
-                        .permitAll()); // Consenti a tutti di accedere al logout
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .csrf(csrf -> csrf.disable()) // Disabilita CSRF per tutte le richieste
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/css/**", "/js/**", "/images/**", "/bootstrap-4/**",
+                                                                "/jquery/**")
+                                                .permitAll() // Permetti l'accesso ai file statici
+                                                .requestMatchers("/login").permitAll() // Consenti l'accesso alla pagina
+                                                                                       // di login
+                                                .requestMatchers("/signup").permitAll() // Consenti l'accesso alla
+                                                                                        // pagina di registrazione
+                                                .requestMatchers("/welcome").permitAll() // Consenti l'accesso alla
+                                                                                         // pagina di welcome
+                                                .requestMatchers("/login-variabiles").permitAll() // Permetti l'accesso
+                                                                                                  // a POST
+                                                                                                  // /login-variabiles
+                                                .requestMatchers("/public/**").permitAll() // Permetti l'accesso a
+                                                                                           // percorsi pubblici
 
-        return http.build();
-    }
+                                                .anyRequest().authenticated() // Richiedi autenticazione per tutte le
+                                                                              // altre pagine
+                                )
+                                .formLogin(form -> form
+                                                .loginPage("/login") // Specifica la pagina di login personalizzata
+                                                .permitAll() // Consenti l'accesso a tutti alla pagina di login
+                                )
+                                .logout(logout -> logout
+                                                .permitAll() // Consenti a tutti di accedere al logout
+                                );
 
-    // Configura utenti in memoria per test
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return new InMemoryUserDetailsManager(
-                User.withUsername("user")
-                        .password("{noop}password") // Usa {noop} per indicare che la password non è codificata
-                        .roles("USER")
-                        .build());
-    }
+                return http.build();
+        }
+
+        // Configura utenti in memoria per test
+        @Bean
+        public UserDetailsService userDetailsService() {
+                return new InMemoryUserDetailsManager(
+                                User.withUsername("user")
+                                                .password("{noop}password") // Usa {noop} per indicare che la password
+                                                                            // non è codificata
+                                                .roles("USER")
+                                                .build());
+        }
 }

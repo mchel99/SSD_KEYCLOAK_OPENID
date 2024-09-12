@@ -91,33 +91,53 @@ function redirectToPagemain() {
 
 
 function redirectToPagemainlogin() {
-  var user = document.getElementById("username").value;
+  var username = document.getElementById("username").value;
   var password = document.getElementById("password").value;
 
-  if (user && password) {
-    $.ajax({
-      url: '/login-variabiles',
-      type: 'POST',
-      data: { 
-        var1: user, 
-        var2: password 
+  // Controlla se i campi username e password sono stati riempiti
+  if (username && password) {
+    // Creazione della stringa con i dati codificati per URL
+    var formData = new URLSearchParams();
+    formData.append("var1", username);
+    formData.append("var2", password);
+
+    // Invio della richiesta POST con fetch
+    fetch('login-variabiles', {
+      method: 'POST',  // Metodo HTTP
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'  // Indica che i dati sono codificati come URL
       },
-      success: function(response) {
-        // Se l'autenticazione è riuscita, mostra un messaggio di successo e reindirizza
-        alert("Login effettuato con successo!");
-        alert("User: " + user + "\nPassword: " + password);
-        window.location.href = "/welcome";
-      },
-      error: function(xhr, status, error) {
-        // Gestisci gli errori
-        alert("Errore di autenticazione. Riprova.");
-        console.error("Errore:", status, error);
+      body: formData.toString()  // Conversione dei dati in stringa URL-encoded
+    })
+    .then(response => {
+      // Verifica se la risposta del server è OK (status 200-299)
+      if (!response.ok) {
+        throw new Error('Errore nella risposta del server: ' + response.status);
       }
+      return response.text();  // Restituisce la risposta in formato testo
+    })
+    .then(data => {
+      // Controllo sulla risposta testuale del server
+      if (data === "success") {  // Se il server ha risposto con "success"
+        alert("Login effettuato con successo!");
+        window.location.href = "/welcome";  // Reindirizzamento alla pagina di benvenuto
+      } else {
+        alert("Username o password non validi.");  // Risposta diversa da "success"
+      }
+    })
+    .catch(error => {
+      // Gestione degli errori durante la richiesta
+      console.error('Errore:', error);
+      alert("Errore durante il login: " + error.message);
     });
   } else {
+    // Se i campi non sono stati riempiti
     alert("Inserisci username e password");
   }
 }
+
+
+
 
 function redirectToPageeditor() {
 

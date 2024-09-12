@@ -61,6 +61,7 @@ public class LDAPService {
      */
     public boolean authenticate(String username, String password) {
         try {
+            System.out.println("CIAO");
             // Verifica se l'utente esiste in LDAP
             if (!userExists(username)) {
                 throw new BadCredentialsException("Utente non trovato.");
