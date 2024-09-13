@@ -1,4 +1,4 @@
-package com.ssd.demo.Service;
+package com.ssd.demo.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;

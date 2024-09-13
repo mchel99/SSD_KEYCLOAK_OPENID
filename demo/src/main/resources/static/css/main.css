@@ -365,7 +365,7 @@ position: center;
 }
 .login_cont {
   width: 650px;
-  height: 380px;
+  height: 400px;
   border-radius: 10px;
   background-color: #1c1c28;
   background-repeat: no-repeat;
@@ -378,7 +378,7 @@ position: center;
   margin: 1px;
   opacity: 1;
   position: relative;
-  top: -20px;
+  top: -15px;
   left: 0px;
   overflow: hidden;
   margin: auto;
