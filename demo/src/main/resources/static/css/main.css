@@ -508,6 +508,12 @@ input[type="password"]:-webkit-autofill {
   padding-right: 62px;
 }
 
+.button_dist2{
+  padding-top: 60px;
+  text-align: center;
+  padding-right: 0px;
+}
+
 .login-button {
   background-color: rgba(57,57,83,1);
   color: #fff;
