@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pdpConfiguration xmlns="urn:oasis:names:tc:xacml:3.0:pdp:config"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="urn:oasis:names:tc:xacml:3.0:pdp:config http://docs.oasis-open.org/xacml/3.0/pdp/config/xacml-pdp-config-3.0.xsd">
+    <pdp>
+        <policyId>example-policy</policyId>
+        <policy>
+            <file>classpath:policy.xml</file>
+        </policy>
+    </pdp>
+</pdpConfiguration>
