@@ -1,4 +1,4 @@
-package com.ssd.demo.service;
+package com.ssd.demo.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
@@ -37,7 +37,7 @@ public class LDAPService {
 
     private LdapAuthenticationProvider createLdapAuthenticationProvider() {
         BindAuthenticator authenticator = new BindAuthenticator(contextSource);
-        authenticator.setUserDnPatterns(new String[] {"cn={0},ou=users,ou=system"});
+        authenticator.setUserDnPatterns(new String[] { "cn={0},ou=users,ou=system" });
         return new LdapAuthenticationProvider(authenticator, new NullLdapAuthoritiesPopulator());
     }
 
@@ -64,8 +64,7 @@ public class LDAPService {
         List<String> result = ldapTemplate.search(
                 "ou=users,ou=system",
                 filter.encode(),
-                (AttributesMapper<String>) attributes -> (String) attributes.get("cn").get()
-        );
+                (AttributesMapper<String>) attributes -> (String) attributes.get("cn").get());
         return !result.isEmpty();
     }
 }

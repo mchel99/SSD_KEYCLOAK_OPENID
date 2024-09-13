@@ -1,4 +1,4 @@
-package com.ssd.demo.controller;
+package com.ssd.demo.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -7,12 +7,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import com.ssd.demo.service.LDAPService;
+import com.ssd.demo.Service.LDAPService;
 import com.ssd.demo.model.User;
 
 @Controller
 public class GUIController {
-    
+
     User user = new User();
     @Autowired
     private LDAPService ldapService;
