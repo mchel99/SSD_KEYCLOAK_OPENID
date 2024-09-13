@@ -1,4 +1,4 @@
-package com.ssd.demo.service;
+package com.ssd.demo.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
@@ -69,13 +69,21 @@ public class LDAPService {
         return !result.isEmpty();
     }
 
-    public void saveUser(String username, String sn, String password, String email, String employeeType) {
-        if (!userExists(username)) {
+    public boolean saveUser(String username, String sn, String password, String email, String employeeType) {
+        try {
+            // Controlla se l'utente esiste già
+            if (userExists(username)) {
+                // Se l'utente esiste già, ritorna false
+                return false;
+            }
 
-            String dn = "cn=" + username + ",ou=users,ou=system,dc=example,dc=com";
+            // Definisce il DN per il nuovo utente
+            String dn = "cn=" + username + ",ou=users,ou=system";
 
+            // Crea un nuovo contesto LDAP per il nuovo utente
             DirContextAdapter context = new DirContextAdapter(dn);
 
+            // Imposta gli attributi dell'utente
             context.setAttributeValues("objectClass", new String[] { "top", "inetOrgPerson" });
             context.setAttributeValue("cn", username);
             context.setAttributeValue("sn", sn);
@@ -83,8 +91,16 @@ public class LDAPService {
             context.setAttributeValue("userPassword", password);
             context.setAttributeValue("employeeType", employeeType);
 
+            // Salva il nuovo utente nel server LDAP
             ldapTemplate.bind(context);
 
+            // Ritorna true se l'utente viene salvato correttamente
+            return true;
+        } catch (Exception e) {
+            // Gestisce eventuali eccezioni durante il salvataggio
+            e.printStackTrace();
+            return false;
         }
     }
+
 }

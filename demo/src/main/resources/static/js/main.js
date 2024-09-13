@@ -197,3 +197,40 @@ function redirectToSignupPage() {
   console.log('redirectToSignupPage function called');
   window.location.href ="/signup";
 }
+
+
+function submitForm() {
+  // Recupera i valori dai campi del form
+  const username = document.getElementById('username').value;
+  const email = document.getElementById('email').value;
+  const employeeType = document.getElementById('employee_type').value;
+  const password = document.getElementById('password').value;
+
+  // Crea i parametri per la richiesta POST
+  const formData = new URLSearchParams();
+  formData.append('user', username);
+  formData.append('pssw', password);
+  formData.append('mail', email);
+  formData.append('emplType', employeeType);
+
+  // Invia la richiesta POST al server
+  fetch('/save-user', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData.toString()
+  })
+  .then(response => response.text())
+  .then(data => {
+      if (data === 'success') {
+          alert('User successfully registered!');
+          redirectToLogin();
+      } else {
+          alert('Error: ' + data);
+      }
+  })
+  .catch(error => {
+      console.error('Error during form submission:', error);
+  });
+}

@@ -1,4 +1,4 @@
-package com.ssd.demo.controller;
+package com.ssd.demo.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import com.ssd.demo.service.LDAPService;
+import com.ssd.demo.Service.LDAPService;
 import com.ssd.demo.model.User;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -45,12 +45,22 @@ public class GUIController {
     }
 
     @PostMapping("/save-user")
-    public ResponseEntity<String> saveUser(@RequestParam("user") String username, @RequestParam("pssw") String password,
-            @RequestParam("mail") String email, @RequestParam("emplType") String employeeType) {
+    public ResponseEntity<String> saveUser(@RequestParam("user") String username,
+            @RequestParam("pssw") String password,
+            @RequestParam("mail") String email,
+            @RequestParam("emplType") String employeeType) {
 
-        ldapService.saveUser(username, username, password, email, employeeType);
+        // Chiamata al servizio LDAP per salvare l'utente
+        boolean isUserCreated = ldapService.saveUser(username, username, password, email, employeeType);
 
-        return ResponseEntity.ok("success");
+        // Se l'utente viene creato con successo
+        if (isUserCreated) {
+            return ResponseEntity.ok("success");
+        }
+        // Se l'utente esiste già o si verifica un errore
+        else {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists or an error occurred");
+        }
     }
 
     @GetMapping("/welcome")
