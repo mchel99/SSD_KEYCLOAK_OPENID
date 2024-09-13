@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Policy PolicyId="example-policy" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit" xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
+    <Target>
+        <AnyOf>
+            <!-- Condizione di accesso per tutti gli utenti -->
+            <AllOf>
+                <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                    <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">user</AttributeValue>
+                    <AttributeDesignator AttributeId="subject-role" DataType="http://www.w3.org/2001/XMLSchema#string" Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"/>
+                </Match>
+            </AllOf>
+        </AnyOf>
+    </Target>
+    
+    <!-- Regola che permette accesso a tutti gli utenti -->
+    <Rule RuleId="permit-user" Effect="Permit">
+        <Target>
+            <AnyOf>
+                <AllOf>
+                    <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">user</AttributeValue>
+                        <AttributeDesignator AttributeId="subject-role" DataType="http://www.w3.org/2001/XMLSchema#string" Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"/>
+                    </Match>
+                </AllOf>
+            </AnyOf>
+        </Target>
+    </Rule>
+
+    <!-- Regola che permette accesso solo agli admin -->
+    <Rule RuleId="permit-admin" Effect="Permit">
+        <Target>
+            <AnyOf>
+                <AllOf>
+                    <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">admin</AttributeValue>
+                        <AttributeDesignator AttributeId="subject-role" DataType="http://www.w3.org/2001/XMLSchema#string" Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"/>
+                    </Match>
+                </AllOf>
+            </AnyOf>
+        </Target>
+    </Rule>
+</Policy>
