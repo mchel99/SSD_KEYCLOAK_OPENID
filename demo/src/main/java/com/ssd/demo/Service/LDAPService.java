@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.ldap.core.AttributesMapper;
+import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -66,5 +67,24 @@ public class LDAPService {
                 filter.encode(),
                 (AttributesMapper<String>) attributes -> (String) attributes.get("cn").get());
         return !result.isEmpty();
+    }
+
+    public void saveUser(String username, String sn, String password, String email, String employeeType) {
+        if (!userExists(username)) {
+
+            String dn = "cn=" + username + ",ou=users,ou=system,dc=example,dc=com";
+
+            DirContextAdapter context = new DirContextAdapter(dn);
+
+            context.setAttributeValues("objectClass", new String[] { "top", "inetOrgPerson" });
+            context.setAttributeValue("cn", username);
+            context.setAttributeValue("sn", sn);
+            context.setAttributeValue("mail", email);
+            context.setAttributeValue("userPassword", password);
+            context.setAttributeValue("employeeType", employeeType);
+
+            ldapTemplate.bind(context);
+
+        }
     }
 }

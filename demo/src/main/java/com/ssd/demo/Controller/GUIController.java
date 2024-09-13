@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.ssd.demo.Service.LDAPService;
 import com.ssd.demo.model.User;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
 public class GUIController {
@@ -41,6 +42,15 @@ public class GUIController {
     @GetMapping("/signup")
     public String signupPage() {
         return "signup";
+    }
+
+    @PostMapping("/save-user")
+    public ResponseEntity<String> saveUser(@RequestParam("user") String username, @RequestParam("pssw") String password,
+            @RequestParam("mail") String email, @RequestParam("emplType") String employeeType) {
+
+        ldapService.saveUser(username, username, password, email, employeeType);
+
+        return ResponseEntity.ok("success");
     }
 
     @GetMapping("/welcome")
