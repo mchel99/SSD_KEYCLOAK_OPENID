@@ -62,6 +62,8 @@ public class SecurityConfig {
                         .requestMatchers("/login-variabiles").permitAll()
                         // Permetti l'accesso a POST /save-user senza autenticazione
                         .requestMatchers("/save-user").permitAll()
+                        // Permetti di effettuare la session invalidation per il logout
+                        .requestMatchers("/logout").permitAll()
                         // Permetti l'accesso ai percorsi pubblici senza autenticazione
                         .requestMatchers("/public/**").permitAll()
                         // Richiedi autenticazione per tutte le altre pagine

@@ -4,12 +4,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.ssd.demo.service.LDAPService;
+
+import jakarta.servlet.http.HttpSession;
+
 import com.ssd.demo.model.User;
-import org.springframework.web.bind.annotation.RequestBody;
+//import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
 public class GUIController {
@@ -25,13 +29,15 @@ public class GUIController {
 
     @PostMapping("/login-variabiles")
     public ResponseEntity<String> receiveLoginData(@RequestParam("var1") String username,
-            @RequestParam("var2") String password) {
+            @RequestParam("var2") String password,
+            HttpSession session) {
 
         System.out.println("username : " + username);
         System.out.println("password : " + password);
 
         if (ldapService.authenticate(username, password)) {
             System.out.println("Dati ricevuti con successo");
+            session.setAttribute("user", username);
             return ResponseEntity.ok("success");
         } else {
             System.out.println("ERRORE");
@@ -64,7 +70,23 @@ public class GUIController {
     }
 
     @GetMapping("/welcome")
-    public String welcomePage() {
-        return "welcome";
+    public String welcomePage(HttpSession session, Model model) {
+        // Ottieni lo username dalla sessione
+        String username = (String) session.getAttribute("user");
+        // Se lo username è null, significa che non c'è nessun utente autenticato
+        if (username == null) {
+            return "redirect:/login"; // Redirect alla pagina di login se non autenticato
+        }
+        // Passa lo username al modello
+        model.addAttribute("user", username);
+        return "welcome"; // Nome del template Thymeleaf per la pagina di benvenuto
     }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        // Invalidare la sessione per fare il logout
+        session.invalidate();
+        return "redirect:/login"; // Redirect alla pagina di login dopo il logout
+    }
+    
 }
