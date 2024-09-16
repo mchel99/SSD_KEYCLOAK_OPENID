@@ -1,42 +1,90 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Policy PolicyId="example-policy" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit" xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
-    <Target>
-        <AnyOf>
-            <!-- Condizione di accesso per tutti gli utenti -->
-            <AllOf>
-                <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-                    <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">user</AttributeValue>
-                    <AttributeDesignator AttributeId="subject-role" DataType="http://www.w3.org/2001/XMLSchema#string" Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"/>
-                </Match>
-            </AllOf>
-        </AnyOf>
-    </Target>
-    
-    <!-- Regola che permette accesso a tutti gli utenti -->
-    <Rule RuleId="permit-user" Effect="Permit">
+<Policy PolicyId="resource-access-policy" 
+        RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:deny-unless-permit"
+        xmlns="urn:oasis:names:tc:xacml:1.0:core:schema">
+
+    <!-- Regola che permette accesso a resource1 solo agli admin -->
+    <Rule RuleId="access-resource1-admin-only" Effect="Permit">
         <Target>
             <AnyOf>
                 <AllOf>
+                    <!-- Condizione che controlla il ruolo dell'utente (admin) -->
                     <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">user</AttributeValue>
-                        <AttributeDesignator AttributeId="subject-role" DataType="http://www.w3.org/2001/XMLSchema#string" Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"/>
+                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">admin</AttributeValue>
+                        <AttributeDesignator AttributeId="employeeType" 
+                                             DataType="http://www.w3.org/2001/XMLSchema#string" 
+                                             Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"/>
+                    </Match>
+                    <!-- Condizione che controlla l'accesso alla resource1 -->
+                    <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">http://localhost:8080/resource1</AttributeValue>
+                        <AttributeDesignator AttributeId="resource-id" 
+                                             DataType="http://www.w3.org/2001/XMLSchema#string" 
+                                             Category="urn:oasis:names:tc:xacml:1.0:resource-category"/>
                     </Match>
                 </AllOf>
             </AnyOf>
         </Target>
     </Rule>
 
-    <!-- Regola che permette accesso solo agli admin -->
-    <Rule RuleId="permit-admin" Effect="Permit">
+    <!-- Regola che permette accesso a resource2 a tutti gli utenti (admin e user) -->
+    <Rule RuleId="access-resource2-all" Effect="Permit">
         <Target>
             <AnyOf>
                 <AllOf>
+                    <!-- Condizione che controlla il ruolo dell'utente (user o admin) -->
+                    <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">user</AttributeValue>
+                        <AttributeDesignator AttributeId="employeeType" 
+                                             DataType="http://www.w3.org/2001/XMLSchema#string" 
+                                             Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"/>
+                    </Match>
                     <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
                         <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">admin</AttributeValue>
-                        <AttributeDesignator AttributeId="subject-role" DataType="http://www.w3.org/2001/XMLSchema#string" Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"/>
+                        <AttributeDesignator AttributeId="employeeType" 
+                                             DataType="http://www.w3.org/2001/XMLSchema#string" 
+                                             Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"/>
+                    </Match>
+                    <!-- Condizione che controlla l'accesso alla resource2 -->
+                    <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">http://localhost:8080/resource2</AttributeValue>
+                        <AttributeDesignator AttributeId="resource-id" 
+                                             DataType="http://www.w3.org/2001/XMLSchema#string" 
+                                             Category="urn:oasis:names:tc:xacml:1.0:resource-category"/>
                     </Match>
                 </AllOf>
             </AnyOf>
         </Target>
     </Rule>
+
+    <!-- Regola che permette accesso a resource3 a tutti gli utenti (admin e user) -->
+    <Rule RuleId="access-resource3-all" Effect="Permit">
+        <Target>
+            <AnyOf>
+                <AllOf>
+                    <!-- Condizione che controlla il ruolo dell'utente (user o admin) -->
+                    <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">user</AttributeValue>
+                        <AttributeDesignator AttributeId="employeeType" 
+                                             DataType="http://www.w3.org/2001/XMLSchema#string" 
+                                             Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"/>
+                    </Match>
+                    <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">admin</AttributeValue>
+                        <AttributeDesignator AttributeId="employeeType" 
+                                             DataType="http://www.w3.org/2001/XMLSchema#string" 
+                                             Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"/>
+                    </Match>
+                    <!-- Condizione che controlla l'accesso alla resource3 -->
+                    <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">http://localhost:8080/resource3</AttributeValue>
+                        <AttributeDesignator AttributeId="resource-id" 
+                                             DataType="http://www.w3.org/2001/XMLSchema#string" 
+                                             Category="urn:oasis:names:tc:xacml:1.0:resource-category"/>
+                    </Match>
+                </AllOf>
+            </AnyOf>
+        </Target>
+    </Rule>
+
 </Policy>

@@ -17,7 +17,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 //import javax.naming.directory.Attributes;
+import javax.naming.directory.Attribute;
 import java.util.List;
+//import java.util.jar.Attributes;
 
 @Service
 public class LDAPService {
@@ -103,4 +105,18 @@ public class LDAPService {
         }
     }
 
+    // Metodo per ottenere il ruolo dell'utente
+    public String getUserRole(String username) {
+        EqualsFilter filter = new EqualsFilter("cn", username);
+        return ldapTemplate.search(
+                "ou=users,ou=system",
+                filter.encode(),
+                (AttributesMapper<String>) attributes -> {
+                    Attribute attribute = attributes.get("employeeType");
+                    if (attribute != null) {
+                        return (String) attribute.get();
+                    }
+                    return null;
+                }).stream().findFirst().orElse(null);
+    }
 }

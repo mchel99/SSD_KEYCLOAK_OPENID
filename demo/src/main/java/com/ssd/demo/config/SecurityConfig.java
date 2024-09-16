@@ -65,7 +65,7 @@ public class SecurityConfig {
                         // Permetti di effettuare la session invalidation per il logout
                         .requestMatchers("/logout").permitAll()
                         // Permetti l'accesso ai file HTML specificati senza autenticazione
-                        .requestMatchers("/resource1.html", "/resource2.html", "/resource3.html").permitAll()
+                        .requestMatchers("/resource1", "/resource2", "/resource3").permitAll()
                         // Permetti l'accesso ai percorsi pubblici senza autenticazione
                         .requestMatchers("/public/**").permitAll()
                         // Richiedi autenticazione per tutte le altre pagine
