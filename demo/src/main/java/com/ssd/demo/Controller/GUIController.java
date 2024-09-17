@@ -22,7 +22,7 @@ public class GUIController {
     private LDAPService ldapService;
 
     @Autowired
-    private XacmlService xacmlService; // Aggiungi il servizio XACML
+    //private XacmlService xacmlService; // Aggiungi il servizio XACML
 
     @GetMapping("/login")
     public String loginPage() {

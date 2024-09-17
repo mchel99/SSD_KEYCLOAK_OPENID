@@ -19,11 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Objects;
+
 
 @Service
 public class XacmlService {
@@ -31,7 +27,7 @@ public class XacmlService {
     private static final Logger logger = LoggerFactory.getLogger(XacmlService.class);
 
     // Contiene le policy disponibili
-    private File[] listaFile;
+    //private File[] listaFile;
 
     // Costruttore vuoto
     public XacmlService() {
