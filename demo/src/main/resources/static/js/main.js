@@ -234,3 +234,12 @@ function submitForm() {
       console.error('Error during form submission:', error);
   });
 }
+
+
+function userF(){
+  window.location.href = "/user";
+}
+
+function adminF(){
+  window.location.href = "/admin";
+}

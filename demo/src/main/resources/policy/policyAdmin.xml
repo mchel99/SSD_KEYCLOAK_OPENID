@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Policy xmlns="urn:oasis:names:tc:xacml:1.0:policy" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+PolicyId="AdminPagePolicy"
+RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:permit-overrides">
+
+<Description>
+Policy per la gestione dell'accesso alla risorsa https://localhost:8444/admin
+</Description>
+
+
+<Target>
+ <Subjects>
+  <AnySubject/>
+ </Subjects>
+ <Resources>
+  <Resource>
+   <ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:regexp-string-match">
+     <ResourceAttributeDesignator DataType="http://www.w3.org/2001/XMLSchema#string"
+             AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"/>
+    <!--risorsa per la quale si regola l'accesso-->
+<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">https://localhost:8444/admin</AttributeValue>
+     
+   </ResourceMatch>
+  </Resource>
+ </Resources>
+ <Actions>
+  <Action>
+  <ActionMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+    <!--azione per la quale si regola l'accesso-->
+  <AttributeValue
+    DataType="http://www.w3.org/2001/XMLSchema#string">read</AttributeValue>
+    <ActionAttributeDesignator DataType="http://www.w3.org/2001/XMLSchema#string"
+    AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"/>
+  </ActionMatch>
+ </Action>
+</Actions>
+</Target>
+
+<Rule RuleId="PermitAdminAP" Effect="Permit" >
+<Target>
+<Subjects>
+<Subject>
+<SubjectMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+<AttributeValue
+DataType="http://www.w3.org/2001/XMLSchema#string">admin</AttributeValue>
+<SubjectAttributeDesignator DataType="http://www.w3.org/2001/XMLSchema#string" AttributeId="role"/>
+</SubjectMatch>
+</Subject>
+</Subjects>
+</Target>
+</Rule>
+
+<!-- regola che nega l'accesso allo user alla pagina dell'admin-->
+<Rule RuleId="DenyUserAP" Effect="Deny" >
+<Target>
+<Subjects>
+<Subject>
+<SubjectMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+<AttributeValue
+DataType="http://www.w3.org/2001/XMLSchema#string">user</AttributeValue>
+<SubjectAttributeDesignator DataType="http://www.w3.org/2001/XMLSchema#string" AttributeId="role"/>
+</SubjectMatch>
+</Subject>
+</Subjects>
+</Target>
+</Rule>
+
+
+</Policy>

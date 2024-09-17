@@ -3,6 +3,9 @@ package com.ssd.demo.controller;
 import com.ssd.demo.service.LDAPService;
 import com.ssd.demo.service.XacmlService; // Importa il servizio XACML
 import jakarta.servlet.http.HttpSession;
+
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,8 +31,8 @@ public class GUIController {
 
     @PostMapping("/login-variabiles")
     public ResponseEntity<String> receiveLoginData(@RequestParam("var1") String username,
-                                                   @RequestParam("var2") String password,
-                                                   HttpSession session) {
+            @RequestParam("var2") String password,
+            HttpSession session) {
 
         System.out.println("username : " + username);
         System.out.println("password : " + password);
@@ -51,9 +54,9 @@ public class GUIController {
 
     @PostMapping("/save-user")
     public ResponseEntity<String> saveUser(@RequestParam("user") String username,
-                                            @RequestParam("pssw") String password,
-                                            @RequestParam("mail") String email,
-                                            @RequestParam("emplType") String employeeType) {
+            @RequestParam("pssw") String password,
+            @RequestParam("mail") String email,
+            @RequestParam("emplType") String employeeType) {
 
         // Chiamata al servizio LDAP per salvare l'utente
         boolean isUserCreated = ldapService.saveUser(username, username, password, email, employeeType);
@@ -81,56 +84,47 @@ public class GUIController {
         return "welcome"; // Nome del template Thymeleaf per la pagina di benvenuto
     }
 
-    @GetMapping("/resource1")
-    public ResponseEntity<String> accessResource1(HttpSession session) {
+    @GetMapping("/admin")
+    public String showAdmin(HttpSession session, Model model) {
+        XacmlService xacmlService = new XacmlService();
+        int result = -1;
         String username = (String) session.getAttribute("user");
-        System.out.println(username);
-        if (username == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
+        String role = ldapService.getUserRole(username);
+        try {
+            result = xacmlService.doFilter(role, "/admin", "read");
+            System.out.println("result meaning: 0=permit, 1=deny, 2=indeterminate, 3=not applicable");
+            System.out.println("result: " + result);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        String role = ldapService.getUserRole(username); // Metodo per ottenere il ruolo dell'utente
-        System.out.println(role);
-        boolean isAllowed = xacmlService.isAccessAllowed(role, "resource1");
-
-        if (isAllowed) {
-            return ResponseEntity.ok("Access granted to resource1");
+        // Carica la pagina solo se l'utente ha il permesso di accedere (gestione in
+        // XACML)
+        if (result == 0) {
+            return "admin";
         } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied to resource1");
+            return "accessDenied"; // o reindirizzamento a una pagina di accesso negato
         }
     }
 
-    @GetMapping("/resource2")
-    public ResponseEntity<String> accessResource2(HttpSession session) {
+    @GetMapping("/user")
+    public String showUser(HttpSession session, Model model) {
+        XacmlService xacmlService = new XacmlService();
+        int result = -1;
         String username = (String) session.getAttribute("user");
-        if (username == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
+        String role = ldapService.getUserRole(username);
+        try {
+            result = xacmlService.doFilter(role, "/user", "read");
+            System.out.println("result meaning: 0=permit, 1=deny, 2=indeterminate, 3=not applicable");
+            System.out.println("result: " + result);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        String role = ldapService.getUserRole(username); // Metodo per ottenere il ruolo dell'utente
-        boolean isAllowed = xacmlService.isAccessAllowed(role, "resource2");
-
-        if (isAllowed) {
-            return ResponseEntity.ok("Access granted to resource2");
+        // Carica la pagina solo se l'utente ha il permesso di accedere (gestione in
+        // XACML)
+        if (result == 0) {
+            return "user";
         } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied to resource2");
-        }
-    }
-
-    @GetMapping("/resource3")
-    public ResponseEntity<String> accessResource3(HttpSession session) {
-        String username = (String) session.getAttribute("user");
-        if (username == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
-        }
-
-        String role = ldapService.getUserRole(username); // Metodo per ottenere il ruolo dell'utente
-        boolean isAllowed = xacmlService.isAccessAllowed(role, "resource3");
-
-        if (isAllowed) {
-            return ResponseEntity.ok("Access granted to resource3");
-        } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied to resource3");
+            return "accessDenied"; // o reindirizzamento a una pagina di accesso negato
         }
     }
 

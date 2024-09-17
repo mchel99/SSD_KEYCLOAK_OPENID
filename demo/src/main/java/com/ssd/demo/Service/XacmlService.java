@@ -1,97 +1,106 @@
 package com.ssd.demo.service;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+
+import org.springframework.stereotype.Service;
+
 import com.sun.xacml.PDP;
-import com.sun.xacml.ParsingException;
+import com.sun.xacml.PDPConfig;
 import com.sun.xacml.ctx.RequestCtx;
 import com.sun.xacml.ctx.ResponseCtx;
 import com.sun.xacml.ctx.Result;
-import com.sun.xacml.ctx.Status;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.sun.xacml.finder.AttributeFinder;
+import com.sun.xacml.finder.PolicyFinder;
+import com.sun.xacml.finder.impl.CurrentEnvModule;
+import com.sun.xacml.finder.impl.FilePolicyModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Objects;
 
 @Service
 public class XacmlService {
 
-    private static final Logger LOGGER = Logger.getLogger(XacmlService.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(XacmlService.class);
 
-    @Autowired
-    private PDP pdp;
+    // Contiene le policy disponibili
+    private File[] listaFile;
 
-    public boolean isAccessAllowed(String role, String resource) {
-        try {
-            // Creiamo una richiesta XACML simulata per il ruolo dell'utente e la risorsa
-            String webres = "http://localhost:8080/" + resource;
-            RequestCtx request = buildXacmlRequest(role, webres);
-
-            // Valutiamo la richiesta XACML
-            ResponseCtx response = pdp.evaluate(request);
-
-            // Interpretiamo la risposta e decidiamo se consentire o negare l'accesso
-            return interpretResponse(response);
-        } catch (ParsingException e) {
-            LOGGER.log(Level.SEVERE, "Errore nella costruzione della richiesta XACML", e);
-            return false;
-        }
+    // Costruttore vuoto
+    public XacmlService() {
     }
 
-    private RequestCtx buildXacmlRequest(String role, String resource) throws ParsingException {
-        // Costruzione della richiesta XACML basata sul ruolo e sulla risorsa
-        String requestXml = String.format(
-            "<Request xmlns=\"urn:oasis:names:tc:xacml:1.0:core:schema\">" +
-            "<Attributes Category=\"urn:oasis:names:tc:xacml:1.0:subject-category:access-subject\">" +
-            "<Attribute AttributeId=\"urn:oasis:names:tc:xacml:1.0:subject:subject-id\">" +
-            "<AttributeValue DataType=\"http://www.w3.org/2001/XMLSchema#string\">%s</AttributeValue>" +
-            "</Attribute>" +
-            "</Attributes>" +
-            "<Attributes Category=\"urn:oasis:names:tc:xacml:1.0:resource-category\">" +
-            "<Attribute AttributeId=\"urn:oasis:names:tc:xacml:1.0:resource:resource-id\">" +
-            "<AttributeValue DataType=\"http://www.w3.org/2001/XMLSchema#string\">%s</AttributeValue>" +
-            "</Attribute>" +
-            "</Attributes>" +
-            "<Attributes Category=\"urn:oasis:names:tc:xacml:1.0:action-category\">" +
-            "<Attribute AttributeId=\"urn:oasis:names:tc:xacml:1.0:action:action-id\">" +
-            "<AttributeValue DataType=\"http://www.w3.org/2001/XMLSchema#string\">read</AttributeValue>" +
-            "</Attribute>" +
-            "</Attributes>" +
-            "</Request>", role, resource
-        );
-    
-        // Stampa per il debug
-        System.out.println("Request XML: " + requestXml);
-    
-        try (InputStream requestStream = new ByteArrayInputStream(requestXml.getBytes(StandardCharsets.UTF_8))) {
-            RequestCtx requestCtx = RequestCtx.getInstance(requestStream);
-            if (requestCtx == null) {
-                throw new ParsingException("Failed to create RequestCtx from XML.");
+    public Integer doFilter(String role, String resource, String action) throws IOException {
+        FilePolicyModule policyModule = new FilePolicyModule();
+        PolicyFinder policyFinder = new PolicyFinder();
+        Set<FilePolicyModule> policyModules = new HashSet<>();
+
+        // Usa ClassPathResource per ottenere il percorso della directory
+        Resource resourceDir = new ClassPathResource("policy/");
+        File policyDirectory = resourceDir.getFile();
+
+        logger.info("PATH_POLICY: " + policyDirectory.getAbsolutePath());
+
+        if (!policyDirectory.exists() || !policyDirectory.isDirectory()) {
+            logger.error("Directory delle policy non trovata o non è una directory.");
+            return -1;
+        }
+
+        File[] listaFile = policyDirectory.listFiles();
+        if (listaFile == null || listaFile.length == 0) {
+            logger.error("Nessun file di policy trovato nella directory.");
+            return -1;
+        }
+
+        // Carica tutte le policy
+        for (File file : listaFile) {
+            String policyFile = file.getAbsolutePath();
+            try {
+                policyModule.addPolicy(policyFile);
+                policyModules.add(policyModule);
+            } catch (Exception e) {
+                logger.error("Errore durante il caricamento della policy: " + policyFile, e);
             }
-            return requestCtx;
-        } catch (Exception e) {
-            // Gestione delle eccezioni per una diagnosi migliore
-            throw new ParsingException("Error processing XACML request: " + e.getMessage(), e);
-        }
-    }
-
-    private boolean interpretResponse(ResponseCtx response) {
-        // Logica per interpretare la risposta XACML
-        // Verifica se la decisione è "Permit" o "Deny"
-        Set<Result> results = response.getResults();
-        if (results.isEmpty()) {
-            return false; // Nessun risultato disponibile
         }
 
-        // Controlliamo solo il primo risultato
-        Result result = results.iterator().next();
-        Status status = result.getStatus();
-        int decision = result.getDecision();
+        policyFinder.setModules(policyModules);
 
-        // Controlla se il risultato è una decisione di "Permit"
-        return decision == Result.DECISION_PERMIT;
+        CurrentEnvModule envModule = new CurrentEnvModule();
+        AttributeFinder attrFinder = new AttributeFinder();
+        List<CurrentEnvModule> attrModules = new ArrayList<>();
+        attrModules.add(envModule);
+        attrFinder.setModules(attrModules);
+
+        try {
+            RequestCtx xacmlRequest = RequestBuilder.createXACMLRequest(role, resource, action);
+
+            PDP pdp = new PDP(new PDPConfig(attrFinder, policyFinder, null));
+            ResponseCtx xacmlResponse = pdp.evaluate(xacmlRequest);
+
+            // Gestisci tutti i risultati
+            Set<Result> results = xacmlResponse.getResults();
+            for (Result result : results) {
+                int decision = result.getDecision();
+                if (decision == Result.DECISION_PERMIT) {
+                    return 0; // Permesso
+                } else if (decision == Result.DECISION_DENY) {
+                    return 1; // Negato
+                } else if (decision == Result.DECISION_NOT_APPLICABLE || decision == Result.DECISION_INDETERMINATE) {
+                    return 2; // Non applicabile o indeterminato
+                }
+            }
+        } catch (Exception ex) {
+            logger.error("Errore durante la valutazione XACML", ex);
+        }
+
+        return -1; // Errore generico
     }
+
 }

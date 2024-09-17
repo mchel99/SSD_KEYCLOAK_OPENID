@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Policy xmlns="urn:oasis:names:tc:xacml:1.0:policy" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+PolicyId="UserPagePolicy"
+RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:permit-overrides">
+
+<Description>
+Policy per la gestione dell'accesso alla risorsa https://localhost:8444/user
+</Description>
+
+
+<Target>
+ <Subjects>
+  <AnySubject/>
+ </Subjects>
+ <Resources>
+  <Resource>
+   <ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:regexp-string-match">
+     <ResourceAttributeDesignator DataType="http://www.w3.org/2001/XMLSchema#string"
+             AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"/>
+    <!--risorsa per la quale si regola l'accesso-->
+<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">https://localhost:8444/user</AttributeValue>
+     
+   </ResourceMatch>
+  </Resource>
+ </Resources>
+ <Actions>
+  <Action>
+  <ActionMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+  <!--azione per la quale si regola l'accesso-->
+  <AttributeValue
+    DataType="http://www.w3.org/2001/XMLSchema#string">read</AttributeValue>
+    <ActionAttributeDesignator DataType="http://www.w3.org/2001/XMLSchema#string"
+    AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"/>
+  </ActionMatch>
+ </Action>
+</Actions>
+</Target>
+
+<Rule RuleId="PermitAmministratore" Effect="Permit" >
+<Target>
+<Subjects>
+<Subject>
+<SubjectMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+<!--regola che permette all'amministratore di accedere alla risorsa user-->
+<AttributeValue
+DataType="http://www.w3.org/2001/XMLSchema#string">admin</AttributeValue>
+<SubjectAttributeDesignator DataType="http://www.w3.org/2001/XMLSchema#string" AttributeId="role"/>
+</SubjectMatch>
+</Subject>
+</Subjects>
+</Target>
+</Rule>
+
+
+<Rule RuleId="PermitUser" Effect="Permit" >
+<Target>
+<Subjects>
+<Subject>
+<SubjectMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+<!-- regola che permette all'utente di accedere alla risorsa user-->
+<AttributeValue
+DataType="http://www.w3.org/2001/XMLSchema#string">user</AttributeValue>
+<SubjectAttributeDesignator DataType="http://www.w3.org/2001/XMLSchema#string" AttributeId="role"/>
+</SubjectMatch>
+</Subject>
+</Subjects>
+</Target>
+</Rule>
+
+
+
+</Policy>
