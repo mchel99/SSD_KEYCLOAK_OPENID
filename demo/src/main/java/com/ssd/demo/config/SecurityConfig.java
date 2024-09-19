@@ -2,41 +2,13 @@ package com.ssd.demo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.ldap.authentication.LdapAuthenticationProvider;
-import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
-import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
-    private final LdapAuthenticationProvider ldapAuthenticationProvider;
-    private final LdapContextSource ldapContextSource;
-
-    public SecurityConfig(LdapAuthenticationProvider ldapAuthenticationProvider, LdapContextSource ldapContextSource) {
-        this.ldapAuthenticationProvider = ldapAuthenticationProvider;
-        this.ldapContextSource = ldapContextSource;
-    }
-
-    @Bean
-    public FilterBasedLdapUserSearch ldapUserSearch() {
-        return new FilterBasedLdapUserSearch("ou=users,ou=system", "cn={0}", ldapContextSource);
-    }
-
-    @Bean
-    public LdapUserDetailsMapper ldapUserDetailsMapper() {
-        return new LdapUserDetailsMapper();
-    }
-
-    @Bean
-    public LdapUserDetailsService ldapUserDetailsService() {
-        return new LdapUserDetailsService(ldapUserSearch()); // Usa la ricerca e il mapper configurati
-    }
 
     /**
      * Configura le regole di sicurezza per le richieste HTTP.
@@ -81,7 +53,7 @@ public class SecurityConfig {
                         .permitAll() // Consenti a tutti di accedere al logout
                 )
 
-                .authenticationProvider(ldapAuthenticationProvider);
+            
 
         return http.build(); // Costruisce e restituisce la configurazione di sicurezza
     }
