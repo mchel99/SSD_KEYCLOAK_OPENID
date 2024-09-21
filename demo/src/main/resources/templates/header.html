@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <body>
+
+        <header>
+            <div class="ui massive menu" style="background-color: #34334e;">
+                <a class="item it2" th:href="@{/}" style="color: white;" onmouseover="this.style.color='orange'" onmouseout="this.style.color='white'" >
+                    <i class="user secret icon"></i>
+                    HOME
+                </a>
+                <a class="item" th:href="@{/public-page}"style="color: white;"onmouseover="this.style.color='orange'" onmouseout="this.style.color='white'" >
+                    Public Page
+                </a>
+                <a class="item" th:href="@{/admin-page}"
+                sec:authorize="hasRole('SSD-ADMIN')"style="color: white;"onmouseover="this.style.color='orange'" onmouseout="this.style.color='white'" >
+                    Admin Page
+                </a>
+                <a class="item" th:href="@{/user-page}"
+                sec:authorize="hasRole('SSD-USER')"style="color: white;"onmouseover="this.style.color='orange'" onmouseout="this.style.color='white'" >
+                    User Page
+                </a>
+                <a class="item" th:href="@{/admin-user-page}"
+                sec:authorize="hasAnyRole('SSD-ADMIN','SSD-USER')"style="color: white;"onmouseover="this.style.color='orange'" onmouseout="this.style.color='white'" >
+                    All user Page
+                </a>
+                <div class="right menu">
+                    <a class="ui item" th:href="@{/login}" sec:authorize="!isAuthenticated()"style="color: white;"onmouseover="this.style.color='orange'" onmouseout="this.style.color='white'" >
+                        Login
+                    </a>
+                    <a class="ui item" sec:authentication="name" sec:authorize="isAuthenticated()"style="color: white;"onmouseover="this.style.color='orange'" onmouseout="this.style.color='white'" >
+                    </a>
+                    <a class="ui item" th:href="@{/logout}" sec:authorize="isAuthenticated()"style="color: white;" onmouseover="this.style.color='orange'" onmouseout="this.style.color='white'" >
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </header>
+
+    </body>
+</html>

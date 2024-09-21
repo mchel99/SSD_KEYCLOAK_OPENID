@@ -12,19 +12,28 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.view.RedirectView;
 
 @Controller
 public class GUIController {
 
+    @GetMapping("/")
+    public String index() {
+        return "index";
+    }
+
     @GetMapping("/login")
-    public String loginPage() {
-        return "login"; // Nome del template Thymeleaf per la pagina di login
+    public RedirectView redirectToKeycloak() {
+        // Effettua il reindirizzamento direttamente a
+        // http://localhost:8080/oauth2/authorization/keycloak
+        return new RedirectView("https://localhost:8443/oauth2/authorization/keycloak");
     }
 
     @GetMapping("/welcome")
     public String welcomePage() {
         return "welcome";
     }
+
     /*
      * @PostMapping("/login-variabiles")
      * public ResponseEntity<String> receiveLoginData(@RequestParam("var1") String

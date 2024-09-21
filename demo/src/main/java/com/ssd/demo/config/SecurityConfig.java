@@ -1,14 +1,43 @@
 package com.ssd.demo.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.SecurityFilterChain;
+
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimNames;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+        public static final String SSD_ADMIN = "SSD-ADMIN";
+        public static final String SSD_USER = "SSD-USER";
+
+        @Value("${jwt.auth.converter.resource-id}")
+        private String resourceId;
+
+        @Value("${jwt.auth.converter.principal-attribute}")
+        private String principalAttribute;
 
         /**
          * Configura le regole di sicurezza per le richieste HTTP.
@@ -19,42 +48,48 @@ public class SecurityConfig {
          */
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-                http
-                                .csrf(csrf -> csrf.disable()) // Disabilita la protezione CSRF per tutte le richieste
-                                .authorizeHttpRequests(auth -> auth
-                                                // Permetti l'accesso ai file statici senza autenticazione
-                                                .requestMatchers("/css/**", "/js/**", "/images/**", "/bootstrap-4/**",
-                                                                "/jquery/**")
+                return http
+                                .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
+                                                .requestMatchers(HttpMethod.GET, "/admin-user-page")
+                                                .hasAnyRole(SSD_ADMIN, SSD_USER)
+                                                .requestMatchers(HttpMethod.GET, "/admin-page").hasRole(SSD_ADMIN)
+                                                .requestMatchers(HttpMethod.GET, "/user-page").hasRole(SSD_USER)
+                                                .requestMatchers(HttpMethod.GET, "/", "/login", "/public-page")
                                                 .permitAll()
-                                                // Permetti l'accesso alla pagina di login senza autenticazione
-                                                .requestMatchers("/login").permitAll()
-                                                // Permetti l'accesso alla pagina di registrazione senza autenticazione
-                                                .requestMatchers("/signup").permitAll()
-                                                // Permetti l'accesso alla pagina di welcome senza autenticazione
-                                                .requestMatchers("/welcome").permitAll()
-                                                // Permetti l'accesso a POST /login-variabiles senza autenticazione
-                                                .requestMatchers("/login-variabiles").permitAll()
-                                                // Permetti l'accesso a POST /save-user senza autenticazione
-                                                .requestMatchers("/save-user").permitAll()
-                                                // Permetti di effettuare la session invalidation per il logout
-                                                .requestMatchers("/logout").permitAll()
-                                                // Permetti l'accesso ai file HTML specificati senza autenticazione
-                                                .requestMatchers("/admin").permitAll()
-                                                .requestMatchers("/user").permitAll()
-                                                .requestMatchers("/accessDenied").permitAll()
-
-                                                // Permetti l'accesso ai percorsi pubblici senza autenticazione
-                                                .requestMatchers("/public/**").permitAll()
-                                                // Richiedi autenticazione per tutte le altre pagine
+                                                .requestMatchers("/oauth2/**").permitAll()
                                                 .anyRequest().authenticated())
-                                .formLogin(form -> form
-                                                .loginPage("/login") // Specifica la pagina di login personalizzata
-                                                .permitAll() // Consenti l'accesso a tutti alla pagina di login
-                                )
-                                .logout(logout -> logout
-                                                .permitAll() // Consenti a tutti di accedere al logout
-                                );
+                                .oauth2Login(oauth2Login -> oauth2Login.loginPage("/login").defaultSuccessUrl("/"))
+                                .logout(logout -> logout.logoutSuccessUrl("/").permitAll())
+                                .csrf(AbstractHttpConfigurer::disable)
+                                .build();
+        }
 
-                return http.build(); // Costruisce e restituisce la configurazione di sicurezza
+        @Bean
+        public OAuth2UserService<OidcUserRequest, OidcUser> oAuth2UserService(@Autowired JwtDecoder jwtDecoder) {
+                OidcUserService delegate = new OidcUserService();
+                return (userRequest) -> {
+                        OidcUser oidcUser = delegate.loadUser(userRequest);
+
+                        Jwt jwt = jwtDecoder.decode(userRequest.getAccessToken().getTokenValue());
+                        Collection<? extends GrantedAuthority> authorities = extractRoles(jwt);
+
+                        String nameAttributeKey = principalAttribute == null ? JwtClaimNames.SUB : principalAttribute;
+                        return new DefaultOidcUser(authorities, oidcUser.getIdToken(), oidcUser.getUserInfo(),
+                                        nameAttributeKey);
+                };
+        }
+
+        private Collection<? extends GrantedAuthority> extractRoles(Jwt jwt) {
+                Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
+                Map<String, Object> resource;
+                Collection<String> resourceRoles;
+                if (resourceAccess == null
+                                || (resource = (Map<String, Object>) resourceAccess.get(resourceId)) == null
+                                || (resourceRoles = (Collection<String>) resource.get("roles")) == null) {
+                        return Collections.emptySet();
+                }
+                return resourceRoles.stream()
+                                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                                .collect(Collectors.toSet());
         }
 }
