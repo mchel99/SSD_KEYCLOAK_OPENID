@@ -39,13 +39,6 @@ public class SecurityConfig {
         @Value("${jwt.auth.converter.principal-attribute}")
         private String principalAttribute;
 
-        /**
-         * Configura le regole di sicurezza per le richieste HTTP.
-         * 
-         * @param http l'oggetto HttpSecurity per configurare le regole di sicurezza.
-         * @return SecurityFilterChain configurato.
-         * @throws Exception se si verifica un errore durante la configurazione.
-         */
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 return http
@@ -92,4 +85,5 @@ public class SecurityConfig {
                                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
                                 .collect(Collectors.toSet());
         }
+
 }
